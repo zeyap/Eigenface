@@ -1,12 +1,12 @@
 #include "mainwindow.h"
 static Mat src;
-static Mat dst;
+static Mat display;
 static Rect roiRect;
 static Point seed;
 static Mat anchors;
 float scale;
 
-char window_name[] = "Canny Edge Detector Demo";
+char window_name[] = "Eigenface";
 
 MainWindow::MainWindow() {
 
@@ -21,7 +21,7 @@ MainWindow::MainWindow() {
 }
 
 void MainWindow::ReadImage() {
-	const char filename[] = "gears.jpg";
+	const char filename[] = "faces/1.pgm";
 	src = imread(filename, IMREAD_COLOR);
 	if (src.empty()) {
 		printf(" Error opening image\n");
@@ -92,13 +92,15 @@ void MainWindow::OnMouse(int event, int x, int y, int flags, void* ustc) {
 void MainWindow::InitAnchors(Mat & mat) {
 	Scalar color = Scalar(255, 255, 255);
 	anchors = Mat::zeros(mat.size(), mat.type());
-	putText(anchors, "+", Point(mat.size().width *0.30, mat.size().height *0.33), FONT_HERSHEY_PLAIN, 3/scale, color, 2, 8);
-	putText(anchors, "+", Point(mat.size().width *0.65, mat.size().height *0.33), FONT_HERSHEY_PLAIN, 3 / scale, color, 2, 8);
+	putText(anchors, "+", Point(mat.size().width *0.30, mat.size().height *0.33), FONT_HERSHEY_PLAIN, 2/scale, color, 2, 8);
+	putText(anchors, "+", Point(mat.size().width *0.70, mat.size().height *0.33), FONT_HERSHEY_PLAIN, 2 / scale, color, 2, 8);
+	
 	putText(anchors, "Press [Enter] to confirm", Point(mat.size().width *0.05, mat.size().height *0.05), FONT_HERSHEY_PLAIN, 1 / scale, color, 1, 8);
 	putText(anchors, "<", Point(mat.size().width *0.05, mat.size().height *0.50), FONT_HERSHEY_PLAIN, 3 / scale, color, 1, 8);
 	putText(anchors, ">", Point(mat.size().width *0.95, mat.size().height *0.50), FONT_HERSHEY_PLAIN, 3 / scale, color, 1, 8);
 	putText(anchors, "^", Point(mat.size().width *0.50, mat.size().height *0.05), FONT_HERSHEY_PLAIN, 3 / scale, color, 1, 8);
 	putText(anchors, "v", Point(mat.size().width *0.50, mat.size().height *0.95), FONT_HERSHEY_PLAIN, 3 / scale, color, 1, 8);
+
 }
 void MainWindow::DisplayAnchors(Mat & mat) {
 	InitAnchors(mat);
