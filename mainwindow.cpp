@@ -2,8 +2,9 @@
 static Mat src;
 static Mat dst;
 static Rect roiRect;
-static bool drag;
 static Point seed;
+static Mat anchors;
+float scale;
 
 char window_name[] = "Canny Edge Detector Demo";
 
@@ -11,11 +12,10 @@ MainWindow::MainWindow() {
 
 	namedWindow(window_name, WINDOW_NORMAL|WINDOW_KEEPRATIO);
 	resizeWindow(window_name, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
-
 	ReadImage();
-	CropAndScale(src,1.0f,Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
+	scale = 1.0f;
+	CropAndScale(src,&scale,Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
 	setMouseCallback(window_name, OnMouse, 0);
-	drag = false;
 
 	waitKey(0);
 }
@@ -30,15 +30,17 @@ void MainWindow::ReadImage() {
 	}
 }
 
-void MainWindow::CropAndScale(Mat mat, float scale, Rect newRect) {
-	Mat trans= mat.clone();
-	if (scale < 1.0f) {
-		scale = 1.0f;
-	}
-	//resize(mat, trans, Size(WINDOW_WIDTH, WINDOW_HEIGHT), scale, scale, 1);
-
+Mat MainWindow::CropAndScale(Mat mat, float* scale, Rect newRect) {
+	Mat newMat = mat.clone();
 	roiRect = newRect;
-	Mat roi= trans(roiRect);
+	if (*scale < 0.8f) {
+		*scale = 0.8f;
+	}
+	else if (*scale > 1.5f) {
+		*scale = 1.5f;
+	}
+	roiRect.width= newRect.width/(*scale);
+	roiRect.height = newRect.height/(*scale);
 
 	if (roiRect.x < 0) {
 		roiRect.x = 0;
@@ -46,36 +48,60 @@ void MainWindow::CropAndScale(Mat mat, float scale, Rect newRect) {
 	if (roiRect.y < 0) {
 		roiRect.y = 0;
 	}
-	if (roiRect.x > trans.size().width - WINDOW_WIDTH - 1)
+	if (roiRect.x + roiRect.width > mat.size().width)
 	{
-		roiRect.x = trans.size().width - WINDOW_WIDTH - 1;
+		roiRect.x = mat.size().width - roiRect.width;
 	}
-	if (roiRect.y > trans.size().height - WINDOW_HEIGHT - 1)
+	if (roiRect.y + roiRect.height > mat.size().height)
 	{
-		roiRect.y = trans.size().height - WINDOW_HEIGHT - 1;
+		roiRect.y = mat.size().height - roiRect.height;
 	}
 
+	Mat roi = newMat(roiRect);
+	DisplayAnchors(roi);
 	imshow(window_name, roi);
+	return roi;
 }
 
 void MainWindow::OnMouse(int event, int x, int y, int flags, void* ustc) {
 	Rect newRect= roiRect;
-	if (event == EVENT_MOUSEMOVE) {
-		if (!drag) {
-			seed = Point(x, y);
-			drag = true;
-		}
-		else {
-			int dx = x - seed.x;
-			int dy = y - seed.y;
-			newRect = Rect(newRect.x + dx, newRect.y + dy, WINDOW_WIDTH, WINDOW_HEIGHT);
-			CropAndScale(src, 1.0f, newRect);
-		}
+	seed = Point(newRect.width/2, newRect.height / 2);
+	int dx = x - seed.x;
+	int dy = y - seed.y;
+
+	if (abs(dx)>newRect.width / 3) {
+		newRect = Rect(newRect.x + dx*0.03f, newRect.y, WINDOW_WIDTH, WINDOW_HEIGHT);
 	}
+	if (abs(dy)>newRect.height / 3) {
+		newRect = Rect(newRect.x,newRect.y + dy*0.03f, WINDOW_WIDTH, WINDOW_HEIGHT);
+	}
+	else {
+		newRect= Rect(newRect.x, newRect.y, WINDOW_WIDTH, WINDOW_HEIGHT);
+	}
+	
+
 	if (event == EVENT_MOUSEWHEEL) {
-		float scale= 1+getMouseWheelDelta(flags)/1200.0f;
-		CropAndScale(src, scale, newRect);
+		scale+=getMouseWheelDelta(flags)/1200.0f;
 	
 	}
 
+	CropAndScale(src, &scale, newRect);
+
+}
+
+void MainWindow::InitAnchors(Mat & mat) {
+	Scalar color = Scalar(255, 255, 255);
+	anchors = Mat::zeros(mat.size(), mat.type());
+	putText(anchors, "+", Point(mat.size().width *0.30, mat.size().height *0.33), FONT_HERSHEY_PLAIN, 3/scale, color, 2, 8);
+	putText(anchors, "+", Point(mat.size().width *0.65, mat.size().height *0.33), FONT_HERSHEY_PLAIN, 3 / scale, color, 2, 8);
+	putText(anchors, "Press [Enter] to confirm", Point(mat.size().width *0.05, mat.size().height *0.05), FONT_HERSHEY_PLAIN, 1 / scale, color, 1, 8);
+	putText(anchors, "<", Point(mat.size().width *0.05, mat.size().height *0.50), FONT_HERSHEY_PLAIN, 3 / scale, color, 1, 8);
+	putText(anchors, ">", Point(mat.size().width *0.95, mat.size().height *0.50), FONT_HERSHEY_PLAIN, 3 / scale, color, 1, 8);
+	putText(anchors, "^", Point(mat.size().width *0.50, mat.size().height *0.05), FONT_HERSHEY_PLAIN, 3 / scale, color, 1, 8);
+	putText(anchors, "v", Point(mat.size().width *0.50, mat.size().height *0.95), FONT_HERSHEY_PLAIN, 3 / scale, color, 1, 8);
+}
+void MainWindow::DisplayAnchors(Mat & mat) {
+	InitAnchors(mat);
+	addWeighted(mat, 1.0, anchors, 1.0, 0.0, mat);
+	
 }
