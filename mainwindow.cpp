@@ -5,6 +5,7 @@ static Rect roiRect;
 static Point seed;
 static Mat anchors;
 float scale;
+bool alignCenter;
 
 char window_name[] = "Eigenface";
 
@@ -14,7 +15,8 @@ MainWindow::MainWindow() {
 	resizeWindow(window_name, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
 	ReadImage();
 	scale = 1.0f;
-	CropAndScale(src,&scale,Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
+	alignCenter = true;
+	CropAndScale(display,&scale,Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
 	setMouseCallback(window_name, OnMouse, 0);
 
 	waitKey(0);
@@ -28,6 +30,7 @@ void MainWindow::ReadImage() {
 		printf(" Usage: ./Smoothing [image_name -- default ..lena.bmp] \n");
 		return;
 	}
+	copyMakeBorder(src,display,(WINDOW_HEIGHT*2 -src.size().height)/2, (WINDOW_HEIGHT*2 - src.size().height) / 2, (WINDOW_WIDTH*2 - src.size().width) / 2, (WINDOW_WIDTH*2 - src.size().width) / 2, BORDER_CONSTANT,Scalar(0,0,0));
 }
 
 Mat MainWindow::CropAndScale(Mat mat, float* scale, Rect newRect) {
@@ -36,8 +39,8 @@ Mat MainWindow::CropAndScale(Mat mat, float* scale, Rect newRect) {
 	if (*scale < 0.8f) {
 		*scale = 0.8f;
 	}
-	else if (*scale > 1.5f) {
-		*scale = 1.5f;
+	else if (*scale > 2.0f) {
+		*scale = 2.0f;
 	}
 	roiRect.width= newRect.width/(*scale);
 	roiRect.height = newRect.height/(*scale);
@@ -57,6 +60,13 @@ Mat MainWindow::CropAndScale(Mat mat, float* scale, Rect newRect) {
 		roiRect.y = mat.size().height - roiRect.height;
 	}
 
+	if (alignCenter) {
+		roiRect.x = (mat.size().width - roiRect.width) / 2;
+		roiRect.y = (mat.size().height - roiRect.height) / 2;
+		alignCenter = false;
+	}
+	
+
 	Mat roi = newMat(roiRect);
 	DisplayAnchors(roi);
 	imshow(window_name, roi);
@@ -68,34 +78,40 @@ void MainWindow::OnMouse(int event, int x, int y, int flags, void* ustc) {
 	seed = Point(newRect.width/2, newRect.height / 2);
 	int dx = x - seed.x;
 	int dy = y - seed.y;
-
-	if (abs(dx)>newRect.width / 3) {
-		newRect = Rect(newRect.x + dx*0.03f, newRect.y, WINDOW_WIDTH, WINDOW_HEIGHT);
+	if (event == EVENT_LBUTTONDOWN) {
+		if (abs(dx)>WINDOW_WIDTH / 5) {
+			newRect = Rect(newRect.x + dx*0.03f, newRect.y, WINDOW_WIDTH, WINDOW_HEIGHT);
+		}
+		if (abs(dy)>WINDOW_HEIGHT / 5) {
+			newRect = Rect(newRect.x, newRect.y + dy*0.03f, WINDOW_WIDTH, WINDOW_HEIGHT);
+		}
 	}
-	if (abs(dy)>newRect.height / 3) {
-		newRect = Rect(newRect.x,newRect.y + dy*0.03f, WINDOW_WIDTH, WINDOW_HEIGHT);
-	}
-	else {
-		newRect= Rect(newRect.x, newRect.y, WINDOW_WIDTH, WINDOW_HEIGHT);
-	}
+	
 	
 
 	if (event == EVENT_MOUSEWHEEL) {
-		scale+=getMouseWheelDelta(flags)/1200.0f;
+		scale+=getMouseWheelDelta(flags)/2000.0f;
 	
 	}
 
-	CropAndScale(src, &scale, newRect);
+	if (event == EVENT_RBUTTONDOWN) {
+		alignCenter = true;
+	}
+
+	newRect = Rect(newRect.x, newRect.y, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	CropAndScale(display, &scale, newRect);
 
 }
 
 void MainWindow::InitAnchors(Mat & mat) {
 	Scalar color = Scalar(255, 255, 255);
 	anchors = Mat::zeros(mat.size(), mat.type());
-	putText(anchors, "+", Point(mat.size().width *0.30, mat.size().height *0.33), FONT_HERSHEY_PLAIN, 2/scale, color, 2, 8);
-	putText(anchors, "+", Point(mat.size().width *0.70, mat.size().height *0.33), FONT_HERSHEY_PLAIN, 2 / scale, color, 2, 8);
+	putText(anchors, "+", Point(mat.size().width *0.40, mat.size().height *0.50), FONT_HERSHEY_PLAIN, 2/scale, color, 1, 8);
+	putText(anchors, "+", Point(mat.size().width *0.60, mat.size().height *0.50), FONT_HERSHEY_PLAIN, 2 / scale, color, 1, 8);
 	
 	putText(anchors, "Press [Enter] to confirm", Point(mat.size().width *0.05, mat.size().height *0.05), FONT_HERSHEY_PLAIN, 1 / scale, color, 1, 8);
+	putText(anchors, "Right click to center", Point(mat.size().width *0.05, mat.size().height *0.10), FONT_HERSHEY_PLAIN, 1 / scale, color, 1, 8);
 	putText(anchors, "<", Point(mat.size().width *0.05, mat.size().height *0.50), FONT_HERSHEY_PLAIN, 3 / scale, color, 1, 8);
 	putText(anchors, ">", Point(mat.size().width *0.95, mat.size().height *0.50), FONT_HERSHEY_PLAIN, 3 / scale, color, 1, 8);
 	putText(anchors, "^", Point(mat.size().width *0.50, mat.size().height *0.05), FONT_HERSHEY_PLAIN, 3 / scale, color, 1, 8);
