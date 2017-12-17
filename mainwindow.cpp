@@ -13,17 +13,23 @@ MainWindow::MainWindow() {
 
 	namedWindow(window_name, WINDOW_NORMAL|WINDOW_KEEPRATIO);
 	resizeWindow(window_name, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
-	ReadImage();
+
 	scale = 1.0f;
-	alignCenter = true;
-	CropAndScale(display,&scale,Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
 	setMouseCallback(window_name, OnMouse, 0);
 
-	waitKey(0);
+	for (int i = 1; i <= MAX_IMAGE_NUMBER; i++) {
+		alignCenter = true;
+		String str = "faces/s"+to_string(i)+".pgm";
+		char* fname = new char[str.length()+1];
+		strcpy(fname, str.c_str());
+		ReadImage(fname);
+		CropAndScale(display, &scale, Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
+		waitKey(0);
+	}
+	
 }
 
-void MainWindow::ReadImage() {
-	const char filename[] = "faces/1.pgm";
+void MainWindow::ReadImage(const char* filename) {
 	src = imread(filename, IMREAD_COLOR);
 	if (src.empty()) {
 		printf(" Error opening image\n");
