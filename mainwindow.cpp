@@ -77,26 +77,29 @@ Mat MainWindow::CropAndScale(Mat mat, float* scale, Rect newRect) {
 	}
 
 	Mat roi = newMat(roiRect);
-	Mat noAnchors = roi;
+	Mat noAnchors = roi.clone();
 	DisplayAnchors(roi);
 	imshow(window_name, roi);
 	return noAnchors;
 }
 
 void MainWindow::Preprocess(Mat roi, int i) {
-	Size sz = Size(120,140);
+	Size sz = Size(60,70);
 	Rect saveRect=Rect(WINDOW_WIDTH*(0.5-EYE_WIDTH_R)/scale, WINDOW_HEIGHT*(EYE_HEIGHT_R/2) / scale, WINDOW_WIDTH*EYE_WIDTH_R*2.5 / scale, WINDOW_HEIGHT*7.0/12 / scale);
 	Mat save_img=roi(saveRect);
 	resize(save_img, save_img, sz);
 
+	cvtColor(save_img, save_img, COLOR_BGR2GRAY);
+	equalizeHist(save_img, save_img);
+
 	String str = "facedb/s" + to_string(i) + ".jpg";
 	char* fname = new char[str.length() + 1];
 	strcpy(fname, str.c_str());
-
 	if (save_img.empty())
 	{
 		std::cerr << "Something is wrong with the webcam, could not get frame." << std::endl;
 	}
+
 	imwrite(fname, save_img);
 
 }
