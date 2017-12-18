@@ -6,6 +6,7 @@ static Point seed;
 static Mat anchors;
 float scale;
 bool alignCenter;
+static Mat currdisplay;
 
 char window_name[] = "Eigenface";
 
@@ -23,8 +24,11 @@ MainWindow::MainWindow() {
 		char* fname = new char[str.length()+1];
 		strcpy(fname, str.c_str());
 		ReadImage(fname);
-		CropAndScale(display, &scale, Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
-		waitKey(0);
+		currdisplay=CropAndScale(display, &scale, Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
+		int key=waitKey(0);
+		if (key == 13) {
+			Preprocess(currdisplay,i);
+		}
 	}
 	
 }
@@ -36,7 +40,7 @@ void MainWindow::ReadImage(const char* filename) {
 		printf(" Usage: ./Smoothing [image_name -- default ..lena.bmp] \n");
 		return;
 	}
-	copyMakeBorder(src,display,(WINDOW_HEIGHT*2 -src.size().height)/2, (WINDOW_HEIGHT*2 - src.size().height) / 2, (WINDOW_WIDTH*2 - src.size().width) / 2, (WINDOW_WIDTH*2 - src.size().width) / 2, BORDER_CONSTANT,Scalar(0,0,0));
+	copyMakeBorder(src,display,(IMAGE_SIDE_LEN -src.size().height)/2, (IMAGE_SIDE_LEN - src.size().height) / 2, (IMAGE_SIDE_LEN - src.size().width) / 2, (IMAGE_SIDE_LEN - src.size().width) / 2, BORDER_CONSTANT,Scalar(0,0,0));
 }
 
 Mat MainWindow::CropAndScale(Mat mat, float* scale, Rect newRect) {
@@ -71,12 +75,30 @@ Mat MainWindow::CropAndScale(Mat mat, float* scale, Rect newRect) {
 		roiRect.y = (mat.size().height - roiRect.height) / 2;
 		alignCenter = false;
 	}
-	
 
 	Mat roi = newMat(roiRect);
+	Mat noAnchors = roi;
 	DisplayAnchors(roi);
 	imshow(window_name, roi);
-	return roi;
+	return noAnchors;
+}
+
+void MainWindow::Preprocess(Mat roi, int i) {
+	Size sz = Size(120,140);
+	Rect saveRect=Rect(WINDOW_WIDTH*(0.5-EYE_WIDTH_R)/scale, WINDOW_HEIGHT*(EYE_HEIGHT_R/2) / scale, WINDOW_WIDTH*EYE_WIDTH_R*2.5 / scale, WINDOW_HEIGHT*7.0/12 / scale);
+	Mat save_img=roi(saveRect);
+	resize(save_img, save_img, sz);
+
+	String str = "facedb/s" + to_string(i) + ".jpg";
+	char* fname = new char[str.length() + 1];
+	strcpy(fname, str.c_str());
+
+	if (save_img.empty())
+	{
+		std::cerr << "Something is wrong with the webcam, could not get frame." << std::endl;
+	}
+	imwrite(fname, save_img);
+
 }
 
 void MainWindow::OnMouse(int event, int x, int y, int flags, void* ustc) {
@@ -91,13 +113,12 @@ void MainWindow::OnMouse(int event, int x, int y, int flags, void* ustc) {
 		if (abs(dy)>WINDOW_HEIGHT / 5) {
 			newRect = Rect(newRect.x, newRect.y + dy*0.03f, WINDOW_WIDTH, WINDOW_HEIGHT);
 		}
+		cout << newRect.x << "/t" << newRect.y << "/n";
 	}
-	
-	
 
 	if (event == EVENT_MOUSEWHEEL) {
 		scale+=getMouseWheelDelta(flags)/2000.0f;
-	
+		cout << newRect.x << "/t" << newRect.y << "/n";
 	}
 
 	if (event == EVENT_RBUTTONDOWN) {
@@ -106,15 +127,15 @@ void MainWindow::OnMouse(int event, int x, int y, int flags, void* ustc) {
 
 	newRect = Rect(newRect.x, newRect.y, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	CropAndScale(display, &scale, newRect);
+	currdisplay=CropAndScale(display, &scale, newRect);
 
 }
 
 void MainWindow::InitAnchors(Mat & mat) {
 	Scalar color = Scalar(255, 255, 255);
 	anchors = Mat::zeros(mat.size(), mat.type());
-	putText(anchors, "+", Point(mat.size().width *0.40, mat.size().height *0.50), FONT_HERSHEY_PLAIN, 2/scale, color, 1, 8);
-	putText(anchors, "+", Point(mat.size().width *0.60, mat.size().height *0.50), FONT_HERSHEY_PLAIN, 2 / scale, color, 1, 8);
+	putText(anchors, "+", Point(mat.size().width *(0.5-EYE_WIDTH_R/2), mat.size().height *EYE_HEIGHT_R), FONT_HERSHEY_PLAIN, 2/scale, color, 1, 8);
+	putText(anchors, "+", Point(mat.size().width *(0.5 + EYE_WIDTH_R / 2), mat.size().height *EYE_HEIGHT_R), FONT_HERSHEY_PLAIN, 2 / scale, color, 1, 8);
 	
 	putText(anchors, "Press [Enter] to confirm", Point(mat.size().width *0.05, mat.size().height *0.05), FONT_HERSHEY_PLAIN, 1 / scale, color, 1, 8);
 	putText(anchors, "Right click to center", Point(mat.size().width *0.05, mat.size().height *0.10), FONT_HERSHEY_PLAIN, 1 / scale, color, 1, 8);
