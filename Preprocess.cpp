@@ -16,21 +16,25 @@ Preprocess::Preprocess(char* newWindowName) {
 	setMouseCallback(window_name, OnMouse, 0);
 
 	for (int i = 1; i <= MAX_IMAGE_NUMBER; i++) {
-		alignCenter = true;
-		String str;
-		if (i<MAX_IMAGE_NUMBER)
-			str = "faces/s" + to_string(i) + ".pgm";
-		else
-			str = "faces/s" + to_string(i) + ".jpg";
-		char* fname = new char[str.length() + 1];
-		strcpy(fname, str.c_str());
-		ReadImage(fname);
-		currdisplay = CropAndScale(display, &scale, Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
-		int key = waitKey(0);
-		if (key == 13) {
-			SaveImage(currdisplay, i);
+		if (Utility::FileExist("facedb/s" + to_string(i) + ".jpg") == false) {
+			alignCenter = true;
+			string fname = "faces/s" + to_string(i);
+			if (i < MAX_IMAGE_NUMBER) {
+				fname += ".pgm";
+			}
+			else {
+				fname += ".jpg";
+			}
+			ReadImage(Utility::CVStringToChar(fname));
+			currdisplay = CropAndScale(display, &scale, Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
+			int key = waitKey(0);
+			if (key == 13) {
+				SaveImage(currdisplay, i);
+			}
 		}
 	}
+
+
 }
 
 void Preprocess::ReadImage(const char* filename) {
@@ -91,15 +95,12 @@ void Preprocess::SaveImage(Mat roi, int i) {
 	cvtColor(save_img, save_img, COLOR_BGR2GRAY);
 	equalizeHist(save_img, save_img);
 
-	String str = "facedb/s" + to_string(i) + ".jpg";
-	char* fname = new char[str.length() + 1];
-	strcpy(fname, str.c_str());
 	if (save_img.empty())
 	{
 		std::cerr << "Something is wrong with the webcam, could not get frame." << std::endl;
 	}
 
-	imwrite(fname, save_img);
+	imwrite(Utility::CVStringToChar("facedb/s" + to_string(i) + ".jpg"), save_img);
 
 }
 

@@ -2,11 +2,12 @@
 
 Train::Train() {
 	InitMatrix();
+	calcCovarMatrix(src,covar,mean,CovarFlags::COVAR_NORMAL,src.type());
 }
 
 void Train::InitMatrix() {
 	Size sz = Size(MAX_IMAGE_NUMBER*OUTPUT_W, OUTPUT_H);
-	Mat matrix = Mat::zeros(sz,CV_8U);
+	src = Mat::zeros(sz,CV_8U);
 	Mat newsrc;
 	for (int i = 1; i <= MAX_IMAGE_NUMBER; i++) {
 		String str = "facedb/s" + to_string(i) + ".jpg";
@@ -19,8 +20,10 @@ void Train::InitMatrix() {
 		}
 
 		Rect rect = Rect((i-1)*OUTPUT_W,0,OUTPUT_W,OUTPUT_H);
-		Mat dstroi=matrix(rect);
+		Mat dstroi=src(rect);
 		newsrc.convertTo(dstroi,dstroi.type(),1,0);
 	}
-	imshow("new", matrix);
+	imshow("matrix", src);
+
 }
+
