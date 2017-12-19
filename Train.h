@@ -13,12 +13,13 @@ private:
 	void InitMatrix(Mat & dst);
 	void GenEigenVV();
 	void Norm(Mat & mat);
-	void Reformat(Mat & mat);
+	void Reformat(Mat mat, Mat & dst);
 	Mat src;
 	Mat covar;
 	Mat means;
 	Mat eigenval;
 	Mat eigenvec;
+	Mat dst;
 };
 
 #endif

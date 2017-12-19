@@ -5,7 +5,6 @@ Train::Train() {
 	//imwrite("src.jpg", src);
 	calcCovarMatrix(src,covar,means,CV_COVAR_NORMAL|CV_COVAR_ROWS);
 	GenEigenVV();
-	waitKey(100000);
 }
 
 void Train::GenEigenVV(){
@@ -18,42 +17,41 @@ void Train::GenEigenVV(){
 
 	eigenvec = eigenvec_full(Rect(0,0,OUTPUT_W*OUTPUT_H, EIGEN_DIM_SZ));
 	Norm(eigenvec);
-	Reformat(eigenvec);
-	imshow("eigenvec",eigenvec);
+	Reformat(eigenvec, dst);
+	imshow("eigenfaces",dst);
 }
 
 void Train::Norm(Mat & mat) {
 	//normalize dimension values (in double) within each sample
 	int dimSz = OUTPUT_H*OUTPUT_W;
 	for (int i = 0; i < EIGEN_DIM_SZ; i++) {
-		double sum=0.0;
+		double max = -999.0;
+		double min = 999.0;
 		for (int j = 0; j < dimSz; j++) {
-			sum += mat.at<double>(i, j);
+			if (mat.at<double>(i, j) > max) {
+				max = mat.at<double>(i, j);
+			}
+			if (mat.at<double>(i, j) < min) {
+				min = mat.at<double>(i, j);
+			}
 		}
-		double m = sum / dimSz;
-		
-		double sqrSum = 0.0;
-		for (int j = 0; j < dimSz; j++) {
-			sqrSum += (mat.at<double>(i, j)-m)*(mat.at<double>(i, j) - m);
-		}
-		double stdDev = sqrt(sqrSum / dimSz);
 
 		for (int j = 0; j < dimSz; j++) {
-			mat.at<double>(i, j) = (mat.at<double>(i, j) - m) / stdDev;
+			mat.at<double>(i, j) = (mat.at<double>(i, j)-min)/(max-min);
 		}
 	}
 }
 
-void Train::Reformat(Mat & mat) {
-	Mat mat_c = mat.clone();
+void Train::Reformat(Mat mat, Mat & dst) {
+	dst = Mat::zeros(Size(EIGEN_DIM_SZ*OUTPUT_W,OUTPUT_H),mat.type());
 
 	for (int i = 0; i < EIGEN_DIM_SZ; i++) {
 		Rect srcrect, dstrect;
 		for (int j = 0; j < OUTPUT_H; j++) {
 			srcrect = Rect(j*OUTPUT_W, i, OUTPUT_W, 1);
 			dstrect = Rect(i*OUTPUT_W, j, OUTPUT_W, 1);
-			Mat srcroi = mat_c(srcrect);
-			Mat dstroi = mat(dstrect);
+			Mat srcroi = mat(srcrect);
+			Mat dstroi = dst(dstrect);
 			srcroi.convertTo(dstroi,dstroi.type(),1,0);
 		}
 	}

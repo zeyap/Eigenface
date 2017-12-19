@@ -34,7 +34,6 @@ Preprocess::Preprocess(char* newWindowName) {
 		}
 	}
 
-
 }
 
 void Preprocess::ReadImage(const char* filename) {
