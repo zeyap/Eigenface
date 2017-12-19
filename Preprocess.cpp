@@ -25,7 +25,7 @@ Preprocess::Preprocess(char* newWindowName) {
 			else {
 				fname += ".jpg";
 			}
-			ReadImage(Utility::CVStringToChar(fname));
+			ReadImage(Utility::StringToChar(fname));
 			currdisplay = CropAndScale(display, &scale, Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
 			int key = waitKey(0);
 			if (key == 13) {
@@ -100,7 +100,7 @@ void Preprocess::SaveImage(Mat roi, int i) {
 		std::cerr << "Something is wrong with the webcam, could not get frame." << std::endl;
 	}
 
-	imwrite(Utility::CVStringToChar("facedb/s" + to_string(i) + ".jpg"), save_img);
+	imwrite(Utility::StringToChar("facedb/s" + to_string(i) + ".jpg"), save_img);
 
 }
 

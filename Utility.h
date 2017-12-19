@@ -6,7 +6,7 @@ using namespace std;
 
 class Utility {
 public:
-	static char* CVStringToChar(string str) {
+	static char* StringToChar(string str) {
 		char* c = new char[str.length() + 1];
 		strcpy(c, str.c_str());
 		return c;
@@ -20,6 +20,9 @@ public:
 		else {
 			return false;
 		}
+	}
+	static void Log() {
+
 	}
 };
 

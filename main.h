@@ -1,10 +1,10 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#define MAX_IMAGE_NUMBER 41
+#define MAX_IMAGE_NUMBER 5
 
-#define OUTPUT_W 60
-#define OUTPUT_H 70
+#define OUTPUT_W 30
+#define OUTPUT_H 35
 
 #include <iostream>
 #include "opencv2/imgproc.hpp"
