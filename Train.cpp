@@ -19,6 +19,9 @@ void Train::GenEigenVV(){
 	Norm(eigenvec);
 	Reformat(eigenvec, dst);
 	imshow("eigenfaces",dst);
+	Utility::Log(eigenvec,"eigen_output/eigen_vector.txt");
+	Utility::Log(dst, "eigen_output/eigen_face.txt");
+	Utility::Log(eigenval, "eigen_output/eigen_value.txt");
 }
 
 void Train::Norm(Mat & mat) {
