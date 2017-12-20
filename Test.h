@@ -14,6 +14,7 @@ private:
 	Mat CalcCoordinate(Mat subject);
 	int FindClosest(Mat coord);
 	double CalcDistance(Mat coord, int sindex);
+	void Reconstruct(Mat coord);
 };
 
 #endif

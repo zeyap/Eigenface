@@ -5,12 +5,8 @@ Test::Test(string fname) {
 	Mat subject = LoadSubject(fname);
 	Mat coord = CalcCoordinate(subject);
 	int closesti = FindClosest(coord); 
+	Reconstruct(coord);
 }
-
-/*
-reconstruct: f= y*A (f-sample)
-test: y = f*A.inv()
-*/
 
 void Test::ReadModel() {
 	model=Utility::ReadLog("eigen_output/eigen_vector.txt");
@@ -34,8 +30,7 @@ Mat Test::LoadSubject(string fname) {
 }
 
 Mat Test::CalcCoordinate(Mat subject) {
-	Mat modelt = model.t();
-	Mat coord = subject * modelt;
+	Mat coord = model.t()*subject;
 	return coord;
 }
 
@@ -72,4 +67,9 @@ double Test::CalcDistance(Mat coord, int sindex) {
 	}
 
 	return sqrt(sqrsum);
+}
+
+void Test::Reconstruct(Mat coord) {
+	Mat rec = model*coord;
+	imshow("reconstruction",rec);
 }
