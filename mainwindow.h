@@ -3,6 +3,7 @@
 
 #include "main.h"
 #include "train.h"
+#include "test.h"
 #include "preprocess.h"
 
 

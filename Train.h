@@ -1,10 +1,10 @@
 #ifndef TRAIN_H
 #define TRAIN_H
 
-#define EIGEN_DIM_SZ 10 //<dimtotal
+//<dimtotal
 
 #include "main.h"
-#include "utility.h"
+#include "utility.hpp"
 
 class Train {
 public:

@@ -9,7 +9,7 @@
 #define EYE_WIDTH_R 0.2
 
 #include "main.h"
-#include "utility.h"
+#include "utility.hpp"
 
 class Preprocess {
 public:

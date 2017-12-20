@@ -1,10 +1,16 @@
 #include "train.h"
 
 Train::Train() {
-	InitMatrix(src);
-	//imwrite("src.jpg", src);
-	calcCovarMatrix(src,covar,means,CV_COVAR_NORMAL|CV_COVAR_ROWS);
-	GenEigenVV();
+	if (!Utility::FileExist("eigen_output/eigen_vector.txt")) {
+		InitMatrix(src);
+		//imwrite("src.jpg", src);
+		calcCovarMatrix(src, covar, means, CV_COVAR_NORMAL | CV_COVAR_ROWS);
+		GenEigenVV();
+	}
+	else {
+		cout << "eigen vectors are already calculated" << endl;
+	}
+	
 }
 
 void Train::GenEigenVV(){
@@ -17,9 +23,9 @@ void Train::GenEigenVV(){
 
 	eigenvec = eigenvec_full(Rect(0,0,OUTPUT_W*OUTPUT_H, EIGEN_DIM_SZ));
 	Norm(eigenvec);
+	Utility::Log(eigenvec, "eigen_output/eigen_vector.txt");
 	Reformat(eigenvec, dst);
-	imshow("eigenfaces",dst);
-	Utility::Log(eigenvec,"eigen_output/eigen_vector.txt");
+ 	imshow("eigenfaces",dst);
 	Utility::Log(dst, "eigen_output/eigen_face.txt");
 	Utility::Log(eigenval, "eigen_output/eigen_value.txt");
 }
