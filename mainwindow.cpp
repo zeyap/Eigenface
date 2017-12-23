@@ -11,7 +11,8 @@ MainWindow::MainWindow() {
 
 	Train train;
 
-	Test test("facedb/s30.jpg",10);
+	Test test("facedb/s1.jpg", 90);
+
  	waitKey();
 	
 }

@@ -8,6 +8,7 @@
 class Test {
 public:
 	Test(string fname,int PCs);
+	int closestCandidate;
 private:
 	void ReadModel(int PCs);
 	Mat LoadSubject(string fname);

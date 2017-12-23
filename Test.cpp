@@ -4,7 +4,7 @@ Test::Test(string fname, int PCs) {
 	ReadModel(PCs);
 	Mat subject = LoadSubject(fname);
 	Mat coord = CalcCoordinate(subject);
-	int closesti = FindClosest(coord); 
+	closestCandidate = FindClosest(coord);
 	Reconstruct(coord);
 }
 
@@ -27,6 +27,7 @@ Mat Test::LoadSubject(string fname) {
 			subject.at<double>(0, dimIdx) = (double)newsrc.at<uchar>(j, k);
 		}
 	}
+	Utility::Normalize(subject,1);
 	return subject;
 }
 
@@ -77,5 +78,8 @@ void Test::Reconstruct(Mat coord) {
 	Utility::Normalize(rec_t, 1);
 	Mat newrec;
 	Utility::PixelVectorToMatrix(rec_t, newrec, 1);
+	cout << newrec.at<uchar>(0,0);
+	cout << newrec.at<uchar>(0, 1);
+	cout << newrec.at<uchar>(0, 2);
 	imshow("reconstruction",newrec);
 }

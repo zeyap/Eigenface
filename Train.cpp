@@ -26,7 +26,7 @@ void Train::GenEigenVV(){
 	Utility::Log(eigenvec, "eigen_output/eigen_vector.txt");
 	Reformat(eigenvec, dst);
  	imshow("eigenfaces",dst);
-	Utility::Log(dst, "eigen_output/eigen_face.txt");
+	//Utility::Log(dst, "eigen_output/eigen_face.txt");
 	Utility::Log(eigenval, "eigen_output/eigen_value.txt");
 }
 
