@@ -6,7 +6,7 @@
 #define OUTPUT_W 30
 #define OUTPUT_H 35
 
-#define EIGEN_DIM_SZ 10
+#define EIGEN_DIM_SZ 100
 
 #include <iostream>
 #include "opencv2/imgproc.hpp"

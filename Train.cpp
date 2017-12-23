@@ -22,7 +22,7 @@ void Train::GenEigenVV(){
 	}
 
 	eigenvec = eigenvec_full(Rect(0,0,OUTPUT_W*OUTPUT_H, EIGEN_DIM_SZ));
-	Norm(eigenvec);
+	Utility::Normalize(eigenvec,EIGEN_DIM_SZ);
 	Utility::Log(eigenvec, "eigen_output/eigen_vector.txt");
 	Reformat(eigenvec, dst);
  	imshow("eigenfaces",dst);
@@ -30,40 +30,8 @@ void Train::GenEigenVV(){
 	Utility::Log(eigenval, "eigen_output/eigen_value.txt");
 }
 
-void Train::Norm(Mat & mat) {
-	//normalize dimension values (in double) within each sample
-	int dimSz = OUTPUT_H*OUTPUT_W;
-	for (int i = 0; i < EIGEN_DIM_SZ; i++) {
-		double max = -999.0;
-		double min = 999.0;
-		for (int j = 0; j < dimSz; j++) {
-			if (mat.at<double>(i, j) > max) {
-				max = mat.at<double>(i, j);
-			}
-			if (mat.at<double>(i, j) < min) {
-				min = mat.at<double>(i, j);
-			}
-		}
-
-		for (int j = 0; j < dimSz; j++) {
-			mat.at<double>(i, j) = (mat.at<double>(i, j)-min)/(max-min);
-		}
-	}
-}
-
 void Train::Reformat(Mat mat, Mat & dst) {
-	dst = Mat::zeros(Size(EIGEN_DIM_SZ*OUTPUT_W,OUTPUT_H),mat.type());
-
-	for (int i = 0; i < EIGEN_DIM_SZ; i++) {
-		Rect srcrect, dstrect;
-		for (int j = 0; j < OUTPUT_H; j++) {
-			srcrect = Rect(j*OUTPUT_W, i, OUTPUT_W, 1);
-			dstrect = Rect(i*OUTPUT_W, j, OUTPUT_W, 1);
-			Mat srcroi = mat(srcrect);
-			Mat dstroi = dst(dstrect);
-			srcroi.convertTo(dstroi,dstroi.type(),1,0);
-		}
-	}
+	Utility::PixelVectorToMatrix(mat, dst, EIGEN_DIM_SZ);
 }
 
 

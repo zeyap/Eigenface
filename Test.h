@@ -3,12 +3,13 @@
 
 #include "main.h"
 #include "utility.hpp"
+#include "train.h"
 
 class Test {
 public:
-	Test(string fname);
+	Test(string fname,int PCs);
 private:
-	void ReadModel();
+	void ReadModel(int PCs);
 	Mat LoadSubject(string fname);
 	Mat model;
 	Mat CalcCoordinate(Mat subject);
