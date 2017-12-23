@@ -6,14 +6,14 @@
 #define IMAGE_SIDE_LEN 700
 
 #define EYE_HEIGHT_R 0.5
-#define EYE_WIDTH_R 0.2
+#define EYE_WIDTH_R 0.20
 
 #include "main.h"
 #include "utility.hpp"
 
 class Preprocess {
 public:
-	Preprocess(char* window_name);
+	Preprocess();
 
 private:
 	void ReadImage(const char* filename);
@@ -21,7 +21,7 @@ private:
 	static Mat CropAndScale(Mat mat, float* scale, Rect newRect);
 	static void DisplayAnchors(Mat &mat);
 	static void InitAnchors(Mat & mat);
-	void SaveImage(Mat roi, int i);
+	void SaveImage(Mat roi, string fname);
 };
 #endif // !MAINWINDOW_H
 

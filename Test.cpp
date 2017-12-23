@@ -1,14 +1,21 @@
 #include "test.h"
 
-Test::Test(string fname, int PCs) {
+Test::Test(string subject_fname, int PCs) {
 	ReadModel(PCs);
-	meanFace = Utility::ReadLog("eigen_output/meanFace.txt");
-	Mat subject = LoadSubject(fname);
+	ReadMeanFace();
+	Mat subject = LoadSubject(subject_fname);
 	Mat coord = CalcCoordinate(subject);
 	closestCandidate = FindClosest(coord);
-	Reconstruct(coord);
 }
 
+void Test::ReadMeanFace() {
+	meanFace = Utility::ReadLog("eigen_output/meanFace.txt");
+	Mat meanFaceNorm = meanFace.clone();
+	Utility::Normalize(meanFaceNorm, 1);
+	Mat meanFaceMat;
+	Utility::PixelVectorToMatrix(meanFaceNorm, meanFaceMat, 1);
+	imshow("meanFace", meanFaceMat);
+}
 void Test::ReadModel(int PCs) {
 	model=Utility::ReadLog("eigen_output/eigen_vector.txt");
 	model = model(Rect(0,0,model.size().width,PCs));
@@ -40,23 +47,26 @@ int Test::FindClosest(Mat coord) {
 	double dist, mindist;
 	int mini;
 	for (int i = 1; i <= MAX_IMAGE_NUMBER; i++) {
-		dist = CalcDistance(coord, i);
-		if (i == 1) {
-			mindist = dist;
-			mini = 1;
-		}
-		else {
-			if (dist < mindist) {
+		for (int j = 1; j < MAX_TEST_INDEX; j++) {
+			dist = CalcDistance(coord, i,j);
+			if (i == 1) {
 				mindist = dist;
-				mini = i;
+				mini = 1;
+			}
+			else {
+				if (dist < mindist) {
+					mindist = dist;
+					mini = i;
+				}
 			}
 		}
+		
 	}
 	return mini;
 }
 
-double Test::CalcDistance(Mat coord, int sindex) {
-	Mat tempsub = LoadSubject("facedb/s"+to_string(sindex)+".jpg");
+double Test::CalcDistance(Mat coord, int sindex, int imgindex) {
+	Mat tempsub = LoadSubject("facedb/s"+to_string(sindex)+"_"+to_string(imgindex)+".jpg");
 	Mat tempcoord = CalcCoordinate(tempsub);
 	
 	int w = coord.size().width;
@@ -70,14 +80,4 @@ double Test::CalcDistance(Mat coord, int sindex) {
 	}
 
 	return sqrt(sqrsum);
-}
-
-void Test::Reconstruct(Mat coord) {
-	Mat rec = model.t()*coord.t();
-	Mat rec_t = rec.t();
-	rec_t += meanFace;
-	Mat newrec;
-	Utility::Normalize(rec_t, 1);
-	Utility::PixelVectorToMatrix(rec_t, newrec, 1);
-	imshow("reconstruction",newrec);
 }

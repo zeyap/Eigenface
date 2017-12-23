@@ -7,17 +7,18 @@
 
 class Test {
 public:
-	Test(string fname,int PCs);
+	Test(string subject_fname, int PCs);
+	Test::Test() {};
 	int closestCandidate;
-private:
+protected:
 	void ReadModel(int PCs);
+	void ReadMeanFace();
 	Mat LoadSubject(string fname);
 	Mat model;
 	Mat meanFace;
 	Mat CalcCoordinate(Mat subject);
 	int FindClosest(Mat coord);
-	double CalcDistance(Mat coord, int sindex);
-	void Reconstruct(Mat coord);
+	double CalcDistance(Mat coord, int sindex, int imgindex);
 };
 
 #endif

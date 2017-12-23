@@ -8,31 +8,31 @@ static Mat anchors;
 float scale;
 bool alignCenter;
 static Mat currdisplay;
-static char* window_name;
+char window_name[] = "Eigenface";
 
-Preprocess::Preprocess(char* newWindowName) {
-	window_name = newWindowName;
+Preprocess::Preprocess() {
+	namedWindow(window_name, WINDOW_NORMAL | WINDOW_KEEPRATIO);
+	resizeWindow(window_name, Size(WINDOW_WIDTH, WINDOW_HEIGHT));
+
 	scale = 1.0f;
 	setMouseCallback(window_name, OnMouse, 0);
 
 	for (int i = 1; i <= MAX_IMAGE_NUMBER; i++) {
-		if (Utility::FileExist("facedb/s" + to_string(i) + ".jpg") == false) {
-			alignCenter = true;
-			string fname = "faces/s" + to_string(i);
-			if (i < MAX_IMAGE_NUMBER) {
-				fname += ".pgm";
-			}
-			else {
-				fname += ".jpg";
-			}
-			ReadImage(Utility::StringToChar(fname));
-			currdisplay = CropAndScale(display, &scale, Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
-			int key = waitKey(0);
-			if (key == 13) {
-				SaveImage(currdisplay, i);
+		for (int j = 1; j <= MAX_TEST_INDEX*2; j++) {
+			if (Utility::FileExist("facedb/s"+ to_string(i) + "_" + to_string(j) +".jpg") == false) {
+				alignCenter = true;
+				string fname = "faces/att_faces/s" + to_string(i) + "/" + to_string(j)+".jpg";
+				ReadImage(Utility::StringToChar(fname));
+				currdisplay = CropAndScale(display, &scale, Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
+				int key = waitKey(0);
+				if (key == 13) {
+					SaveImage(currdisplay, "facedb/s" + to_string(i) + "_" + to_string(j) + ".jpg");
+				}
 			}
 		}
 	}
+
+	destroyWindow(window_name);
 
 }
 
@@ -51,8 +51,8 @@ Mat Preprocess::CropAndScale(Mat mat, float* scale, Rect newRect) {
 	if (*scale < 0.8f) {
 		*scale = 0.8f;
 	}
-	else if (*scale > 2.0f) {
-		*scale = 2.0f;
+	else if (*scale > 2.5f) {
+		*scale = 2.5f;
 	}
 	roiRect.width = newRect.width / (*scale);
 	roiRect.height = newRect.height / (*scale);
@@ -81,16 +81,15 @@ Mat Preprocess::CropAndScale(Mat mat, float* scale, Rect newRect) {
 	Mat roi = newMat(roiRect);
 	Mat noAnchors = roi.clone();
 	DisplayAnchors(roi);
-	imshow(window_name, roi);
+	imshow("Eigenface", roi);
 	return noAnchors;
 }
 
-void Preprocess::SaveImage(Mat roi, int i) {
+void Preprocess::SaveImage(Mat roi, string fname) {
 	Size sz = Size(OUTPUT_W, OUTPUT_H);
 	Rect saveRect = Rect(WINDOW_WIDTH*(0.5 - EYE_WIDTH_R) / scale, WINDOW_HEIGHT*(EYE_HEIGHT_R / 2) / scale, WINDOW_WIDTH*EYE_WIDTH_R*2.5 / scale, WINDOW_HEIGHT*7.0 / 12 / scale);
 	Mat save_img = roi(saveRect);
 	resize(save_img, save_img, sz);
-
 	cvtColor(save_img, save_img, COLOR_BGR2GRAY);
 	equalizeHist(save_img, save_img);
 
@@ -99,7 +98,7 @@ void Preprocess::SaveImage(Mat roi, int i) {
 		std::cerr << "Something is wrong with the webcam, could not get frame." << std::endl;
 	}
 
-	imwrite(Utility::StringToChar("facedb/s" + to_string(i) + ".jpg"), save_img);
+	imwrite(fname, save_img);
 
 }
 
@@ -115,12 +114,10 @@ void Preprocess::OnMouse(int event, int x, int y, int flags, void* ustc) {
 		if (abs(dy)>WINDOW_HEIGHT / 5) {
 			newRect = Rect(newRect.x, newRect.y + dy*0.03f, WINDOW_WIDTH, WINDOW_HEIGHT);
 		}
-		cout << newRect.x << "/t" << newRect.y << "/n";
 	}
 
 	if (event == EVENT_MOUSEWHEEL) {
 		scale += getMouseWheelDelta(flags) / 2000.0f;
-		cout << newRect.x << "/t" << newRect.y << "/n";
 	}
 
 	if (event == EVENT_RBUTTONDOWN) {
