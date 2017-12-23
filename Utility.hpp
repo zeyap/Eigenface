@@ -82,8 +82,7 @@ public:
 		return log;
 	}
 	static void PixelVectorToMatrix(Mat src, Mat & dst, int eigendimSz) {
-		dst = Mat::zeros(Size(eigendimSz*OUTPUT_W, OUTPUT_H), CV_8U);
-		Mat dst0 = Mat::zeros(Size(eigendimSz*OUTPUT_W, OUTPUT_H), src.type());
+		dst = Mat::zeros(Size(eigendimSz*OUTPUT_W, OUTPUT_H), CV_64F);
 
 		for (int i = 0; i < eigendimSz; i++) {
 			Rect srcrect, dstrect;
@@ -91,13 +90,8 @@ public:
 				srcrect = Rect(j*OUTPUT_W, i, OUTPUT_W, 1);
 				dstrect = Rect(i*OUTPUT_W, j, OUTPUT_W, 1);
 				Mat srcroi = src(srcrect);
-				Mat dstroi = dst0(dstrect);
+				Mat dstroi = dst(dstrect);
 				srcroi.convertTo(dstroi, dstroi.type(), 1, 0);
-			}
-			for (int j = 0; j < OUTPUT_H; j++) {
-				for (int k = 0; k < OUTPUT_W; k++) {
-					dst.at<uchar>(j, i*OUTPUT_W+k) = (uchar)(dst0.at<double>(j, i*OUTPUT_W + k)*255);
-				}
 			}
 		}
 	}
