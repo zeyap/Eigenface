@@ -12,7 +12,7 @@ public:
 	static void Reformat(Mat mat, Mat & dst);
 private:
 	void InitMatrix(Mat & dst);
-	void GenEigenVV();
+	void GenEigenVV(Mat & dst);
 	Mat src;
 	Mat covar;
 	Mat means;

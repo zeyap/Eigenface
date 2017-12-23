@@ -2,6 +2,7 @@
 
 Test::Test(string fname, int PCs) {
 	ReadModel(PCs);
+	meanFace = Utility::ReadLog("eigen_output/meanFace.txt");
 	Mat subject = LoadSubject(fname);
 	Mat coord = CalcCoordinate(subject);
 	closestCandidate = FindClosest(coord);
@@ -27,8 +28,7 @@ Mat Test::LoadSubject(string fname) {
 			subject.at<double>(0, dimIdx) = (double)newsrc.at<uchar>(j, k);
 		}
 	}
-	Utility::Normalize(subject,1);
-	return subject;
+	return subject-meanFace;
 }
 
 Mat Test::CalcCoordinate(Mat subject) {
@@ -75,11 +75,9 @@ double Test::CalcDistance(Mat coord, int sindex) {
 void Test::Reconstruct(Mat coord) {
 	Mat rec = model.t()*coord.t();
 	Mat rec_t = rec.t();
-	Utility::Normalize(rec_t, 1);
+	rec_t += meanFace;
 	Mat newrec;
+	Utility::Normalize(rec_t, 1);
 	Utility::PixelVectorToMatrix(rec_t, newrec, 1);
-	cout << newrec.at<uchar>(0,0);
-	cout << newrec.at<uchar>(0, 1);
-	cout << newrec.at<uchar>(0, 2);
 	imshow("reconstruction",newrec);
 }

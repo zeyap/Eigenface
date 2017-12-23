@@ -13,6 +13,7 @@ private:
 	void ReadModel(int PCs);
 	Mat LoadSubject(string fname);
 	Mat model;
+	Mat meanFace;
 	Mat CalcCoordinate(Mat subject);
 	int FindClosest(Mat coord);
 	double CalcDistance(Mat coord, int sindex);

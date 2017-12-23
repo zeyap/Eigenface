@@ -5,7 +5,7 @@ Train::Train() {
 		InitMatrix(src);
 		//imwrite("src.jpg", src);
 		calcCovarMatrix(src, covar, means, CV_COVAR_NORMAL | CV_COVAR_ROWS);
-		GenEigenVV();
+		GenEigenVV(dst);
 	}
 	else {
 		cout << "eigen vectors are already calculated" << endl;
@@ -13,7 +13,7 @@ Train::Train() {
 	
 }
 
-void Train::GenEigenVV(){
+void Train::GenEigenVV(Mat & dst){
 	Mat eigenvec_full;
 	eigen(covar, eigenval, eigenvec_full);
 	int dimtotal = eigenvec_full.size().height;
@@ -22,8 +22,8 @@ void Train::GenEigenVV(){
 	}
 
 	eigenvec = eigenvec_full(Rect(0,0,OUTPUT_W*OUTPUT_H, EIGEN_DIM_SZ));
-	Utility::Normalize(eigenvec,EIGEN_DIM_SZ);
 	Utility::Log(eigenvec, "eigen_output/eigen_vector.txt");
+	Utility::Normalize(eigenvec,EIGEN_DIM_SZ);
 	Reformat(eigenvec, dst);
  	imshow("eigenfaces",dst);
 	//Utility::Log(dst, "eigen_output/eigen_face.txt");
@@ -37,8 +37,9 @@ void Train::Reformat(Mat mat, Mat & dst) {
 
 void Train::InitMatrix(Mat & dst) {
 	Size sz = Size(OUTPUT_H*OUTPUT_W, MAX_IMAGE_NUMBER);
-	dst = Mat::zeros(sz,CV_8U);
+	dst = Mat::zeros(sz,CV_64F);
 	Mat newsrc;
+	Mat meanFace = Mat::zeros(Size(OUTPUT_W*OUTPUT_H,1),CV_64F);
 	for (int i = 1; i <= MAX_IMAGE_NUMBER; i++) {
 		char* fname = Utility::StringToChar("facedb/s" + to_string(i) + ".jpg");
 		newsrc = imread(fname, CV_LOAD_IMAGE_GRAYSCALE);
@@ -51,11 +52,21 @@ void Train::InitMatrix(Mat & dst) {
  		for (int j = 0; j < OUTPUT_H; j++) {
 			for (int k = 0; k < OUTPUT_W; k++) {
 				dimIdx = j*OUTPUT_W + k;
-				dst.at<uchar>(i - 1, dimIdx) = newsrc.at<uchar>(j,k);
+				dst.at<double>(i - 1, dimIdx) = (double)newsrc.at<uchar>(j,k);
+				meanFace.at<double>(0,dimIdx) += (double)newsrc.at<uchar>(j, k);
 			}
-			
 		}
 		
+	}
+	meanFace /= MAX_IMAGE_NUMBER;
+	Utility::Log(meanFace, "eigen_output/meanface.txt");
+	for (int i = 1; i <= MAX_IMAGE_NUMBER; i++) {
+		for (int j = 0; j < OUTPUT_H; j++) {
+			for (int k = 0; k < OUTPUT_W; k++) {
+				int dimIdx = j*OUTPUT_W + k;
+				dst.at<double>(i - 1, dimIdx) -= meanFace.at<double>(0, dimIdx);
+			}
+		}
 	}
 }
 
