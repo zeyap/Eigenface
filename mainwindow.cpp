@@ -28,7 +28,7 @@ MainWindow::MainWindow() {
 		cout << endl;
 	}
 	
-	Reconstruct myConstruct("facedb/s41.jpg",50);
+	Reconstruct myConstruct("facedb/s41.jpg",100);
  	waitKey();
 	
 }

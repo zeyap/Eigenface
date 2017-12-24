@@ -21,7 +21,7 @@ Preprocess::Preprocess() {
 		for (int j = 1; j <= MAX_TEST_INDEX*2; j++) {
 			if (Utility::FileExist("facedb/s"+ to_string(i) + "_" + to_string(j) +".jpg") == false) {
 				alignCenter = true;
-				string fname = "faces/att_faces/s" + to_string(i) + "/" + to_string(j)+".jpg";
+				string fname = "faces/att_faces/s" + to_string(i) + "/" + to_string(j)+".pgm";
 				ReadImage(Utility::StringToChar(fname));
 				currdisplay = CropAndScale(display, &scale, Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
 				int key = waitKey(0);
